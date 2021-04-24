@@ -9,6 +9,8 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Button speechEngine;
+    private Button chatEncrption;
 
 
     @Override
@@ -16,6 +18,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        
+        speechEngine = findViewById(R.id.speechEngine);
+        speechEngine.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,TextToSpeech.class));
+
+            }
+        });
+
+        chatEncrption = findViewById(R.id.chatencrption);
+        chatEncrption.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,EncryptedChatSystem.class));
+
+            }
+        });
+
+
     }
 }
