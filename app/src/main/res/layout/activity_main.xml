@@ -68,7 +68,7 @@
             android:layout_below="@+id/tv_textencrption"
             android:layout_marginTop="8dp"
             android:layout_centerHorizontal="true"
-            android:text="Encrpted Chat"
+            android:text="Encrypted Chat"
             android:textStyle="bold"/>
 
 
