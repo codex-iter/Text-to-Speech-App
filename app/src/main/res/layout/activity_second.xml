@@ -43,6 +43,14 @@
         android:layout_below="@id/phnNo"
         android:layout_centerInParent="true"
         android:layout_marginTop="50dp"/>
+    <TextView
+        android:id="@+id/recvphoneNo."
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="From :>"
+        android:layout_below="@id/textEncrypted"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="30dp"/>
 
     <EditText
         android:id="@+id/textEncrypted"

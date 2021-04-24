@@ -29,9 +29,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class SecondActivity extends AppCompatActivity {
     EditText inputText , number,outputText;
-    TextView inputPassword;
+    TextView inputPassword, recvphoneNo;
     Button encBtn, decBtn ,backbtn, btnSend;
-    String outputString,tempEncrypted,RecvPhnNo;
+    String outputString,tempEncrypted,RecvPhnNo="testpassword";
+    String string="";
     String AES="AES";
 
 
@@ -49,6 +50,7 @@ public class SecondActivity extends AppCompatActivity {
         backbtn=findViewById(R.id.btnLeave);
         btnSend=findViewById(R.id.btnSend);
         number=findViewById(R.id.phnNo);
+        recvphoneNo=findViewById(R.id.recvphoneNo_);
         if(checkSelfPermission(Manifest.permission.RECEIVE_SMS)!=PackageManager.PERMISSION_GRANTED)
         {
             requestPermissions(new String[]{Manifest.permission.RECEIVE_SMS, Manifest.permission.SEND_SMS,Manifest.permission.READ_PHONE_STATE},2);
@@ -92,34 +94,49 @@ public class SecondActivity extends AppCompatActivity {
 
 //        });
 
-//        decBtn.setOnClickListener(view -> {
-//
-//            try {
+        decBtn.setOnClickListener(view -> {
+
+
+            try {
 //                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                    outputString=decrypt(outputString,RecvPhnNo);
-//                    outputText.setText((outputString));
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//
-//        });
+                    string=decrypt(outputText.getText().toString(),RecvPhnNo);
+                    Toast.makeText(this, "decrypted", Toast.LENGTH_SHORT).show();
+                    outputText.setText((string.trim()));
+
+            } catch (Exception e) {
+                Toast.makeText(this, "Error", Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            }
+
+
+        });
 
         btnSend.setOnClickListener(view -> {
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
             {
                 if(checkSelfPermission(Manifest.permission.SEND_SMS)== PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            outputString = encrypt(inputText.getText().toString(), inputPassword.getText().toString());
-                        }
-                        tempEncrypted = outputString;
+                    if(inputText.length()>0&& number.length()>0 &&number.length()<11) {
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                outputString = encrypt(inputText.getText().toString(), inputPassword.getText().toString());
+                            }
+                            tempEncrypted = outputString;
 //                        outputText.setText(outputString);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        sendSMS();
                     }
-                    sendSMS();
+                    else if(inputText.length()==0)
+                    {
+                        Toast.makeText(this, "please write your message ", Toast.LENGTH_LONG).show();
+                        inputText.requestFocus();
+                    }
+                    else if(number.length()==0)
+                    {
+                        Toast.makeText(this, "please Enter a number ", Toast.LENGTH_LONG).show();
+                        number.requestFocus();
+                    }
                 }
 
                 else
@@ -130,30 +147,23 @@ public class SecondActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void receiveSMS() throws Exception {
+    public void receiveSMS()  {
         BroadcastReceiver br = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    for (SmsMessage sms:Telephony.Sms.Intents.getMessagesFromIntent(intent)){
-//                        RecvPhnNo=sms.getOriginatingAddress();
-                        RecvPhnNo=inputPassword.toString();
-//                        outputText.setText(sms.getDisplayMessageBody());
-                        Toast.makeText(getApplicationContext(),sms.getDisplayMessageBody(),Toast.LENGTH_LONG).show();
 
-                    }
+                    for (SmsMessage sms:Telephony.Sms.Intents.getMessagesFromIntent(intent)){
+                        recvphoneNo.setText(sms.getOriginatingAddress());
+                        outputText.setText(sms.getDisplayMessageBody());
+                        outputString=outputText.toString();
+                        Toast.makeText(getApplicationContext(),sms.getDisplayMessageBody(),Toast.LENGTH_SHORT).show();
+
+
 
                 }
             }
         };
         registerReceiver(br, new IntentFilter("android.provider.Telephony.SMS_RECEIVED"));
-        SecretKeySpec key =generateKey(RecvPhnNo);
-        Cipher c=Cipher.getInstance(AES);
-        c.init(Cipher.DECRYPT_MODE,key);
-        byte[] decodedValue = Base64.getDecoder().decode(outputString);
-        byte[] decValue=c.doFinal(decodedValue);
-        String decryptedValue=new String(decValue);
-        outputText.setText(decryptedValue);
     }
 
 
@@ -172,16 +182,16 @@ public class SecondActivity extends AppCompatActivity {
         }
     }
 
-//    @RequiresApi(api = Build.VERSION_CODES.O)
-//    private String decrypt(String outputString, String Password) throws Exception{
-//        SecretKeySpec key =generateKey(Password);
-//        Cipher c=Cipher.getInstance(AES);
-//        c.init(Cipher.DECRYPT_MODE,key);
-//        byte[] decodedValue = Base64.getDecoder().decode(outputString);
-//        byte[] decValue=c.doFinal(decodedValue);
-//        String decryptedValue=new String(decValue);
-//        return decryptedValue;
-//    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private String decrypt(String outputString, String Password) throws Exception{
+        SecretKeySpec key =generateKey(Password);
+        Cipher c=Cipher.getInstance(AES);
+        c.init(Cipher.DECRYPT_MODE,key);
+        byte[] decodedValue = Base64.getDecoder().decode(outputString);
+        byte[] decValue=c.doFinal(decodedValue);
+        String decryptedValue=new String(decValue);
+        return decryptedValue;
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private String encrypt(String Data, String Password) throws Exception{
