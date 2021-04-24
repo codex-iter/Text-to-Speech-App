@@ -1,0 +1,8 @@
+com/example/text_to_speech_app/EncryptedChatSystem.java
+ com.example.text_to_speech_app.EncryptedChatSystem
+com/example/text_to_speech_app/MainActivity.java
+ com.example.text_to_speech_app.MainActivity
+com/example/text_to_speech_app/TextToSpeech.java
+ com.example.text_to_speech_app.TextToSpeech
+com/example/text_to_speech_app/BuildConfig.java
+ com.example.text_to_speech_app.BuildConfig
