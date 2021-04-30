@@ -67,6 +67,28 @@ public class TextToSpeechEngine extends AppCompatActivity {
             }
         });
 
+
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(tts != null)
+                {
+                    tts.stop();
+                }
+
+            }
+        });
+
     }
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if(tts != null)
+        {
+            tts.stop();
+            tts.shutdown();
+        }
+
+    }
 }
