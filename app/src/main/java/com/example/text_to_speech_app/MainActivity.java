@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+
+
 public class MainActivity extends AppCompatActivity {
 
     private Button speechEngine;
@@ -22,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         speechEngine.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this,TextToSpeech.class));
+                startActivity(new Intent(MainActivity.this,TextToSpeechEngine.class));
 
             }
         });
