@@ -144,13 +144,64 @@ public class EncryptedChatSystem extends AppCompatActivity {
         });
 
 
+        bt_decrypt.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onClick(View view) {
+
+                try {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    string=decrypt(et_message.getText().toString(),et_password.getText().toString());
+                    Toast.makeText(getApplicationContext(), "decrypted", Toast.LENGTH_SHORT).show();
+                    et_message.setText((string.trim()));
+
+                    bt_send.setVisibility(View.VISIBLE);
+                    bt_decrypt.setVisibility(View.GONE);
+
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+
+
+
+            }
+        });
 
 
 
     }
 
+//    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void receiveSMS()  {
+        BroadcastReceiver br = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
 
-  
+                for (SmsMessage sms: Telephony.Sms.Intents.getMessagesFromIntent(intent)){
+                    et_phone.setText(sms.getOriginatingAddress());
+//                    et_message.setText(sms.getDisplayMessageBody());
+//                    outputString=outputText.toString();
+                    Toast.makeText(getApplicationContext(),sms.getDisplayMessageBody(),Toast.LENGTH_SHORT).show();
+
+
+
+                }
+            }
+        };
+        registerReceiver(br, new IntentFilter("android.provider.Telephony.SMS_RECEIVED"));
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private String decrypt(String outputString, String Password) throws Exception{
+        SecretKeySpec key =generateKey(Password);
+        Cipher c=Cipher.getInstance(AES);
+        c.init(Cipher.DECRYPT_MODE,key);
+        byte[] decodedValue = Base64.getDecoder().decode(outputString);
+        byte[] decValue=c.doFinal(decodedValue);
+        String decryptedValue=new String(decValue);
+        return decryptedValue;
+    }
 
     private SecretKeySpec generateKey(String password) throws Exception{
         final MessageDigest digest=MessageDigest.getInstance("SHA-256");
