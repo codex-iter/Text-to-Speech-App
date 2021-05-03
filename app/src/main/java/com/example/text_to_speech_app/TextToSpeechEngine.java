@@ -25,10 +25,16 @@ public class TextToSpeechEngine extends AppCompatActivity {
 
     SeekBar speechRate;
     TextView tv_rate;
+    SeekBar speechPitch;
+    TextView tv_pitch;
 
     float rate = 1.0f;
     float step = 0.02f;
     float min = 0.1f;
+
+    float pitch = 1.0f;
+
+
 
 
 
@@ -47,9 +53,11 @@ public class TextToSpeechEngine extends AppCompatActivity {
         stop = findViewById(R.id.bt_stop);
 
         tv_rate = findViewById(R.id.tv_rate);
+        tv_pitch = findViewById(R.id.tv_pitch);
 
         tv_rate.setText("45");
-//        tv_rate.setVisibility(View.VISIBLE);
+        tv_pitch.setText("45");
+
         speechRate = findViewById(R.id.sb_rate);
         speechRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -72,6 +80,27 @@ public class TextToSpeechEngine extends AppCompatActivity {
             }
         });
 
+        speechPitch = findViewById(R.id.sb_pitch);
+        speechPitch.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
+                pitch = min+(progress*step);
+                tts.setPitch(pitch);
+                tv_pitch.setText(Integer.toString(progress));
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
 
         tts =new TextToSpeech(TextToSpeechEngine.this, new TextToSpeech.OnInitListener() {
             @Override
@@ -80,6 +109,7 @@ public class TextToSpeechEngine extends AppCompatActivity {
                 if(i == TextToSpeech.SUCCESS){
                     result = tts.setLanguage(Locale.UK);
                     tts.setSpeechRate(rate);
+                    tts.setPitch(pitch);
                 }
                 else{
                     Toast.makeText(getApplicationContext(), "Feature not supported on your device", Toast.LENGTH_SHORT).show();
