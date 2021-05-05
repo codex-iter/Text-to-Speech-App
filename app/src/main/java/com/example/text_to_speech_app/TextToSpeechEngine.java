@@ -4,16 +4,25 @@ import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.mannan.translateapi.Language;
+import com.mannan.translateapi.TranslateAPI;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+
 
 public class TextToSpeechEngine extends AppCompatActivity {
 
@@ -34,9 +43,14 @@ public class TextToSpeechEngine extends AppCompatActivity {
 
     float pitch = 1.0f;
 
+    Locale[] locales = Locale.getAvailableLocales();
+    List<Locale> localeList = new ArrayList<Locale>();
+    List<String> country=  new ArrayList<String>();
 
+    Locale currentSelection;
 
-
+    Spinner language;
+    ArrayAdapter<String> dataAdapter;
 
     public TextToSpeechEngine() {
     }
@@ -52,13 +66,18 @@ public class TextToSpeechEngine extends AppCompatActivity {
         speak = findViewById(R.id.bt_speak);
         stop = findViewById(R.id.bt_stop);
 
+        speechRate = findViewById(R.id.sb_rate);
+        speechPitch = findViewById(R.id.sb_pitch);
+
+        language = findViewById(R.id.language);
+
         tv_rate = findViewById(R.id.tv_rate);
         tv_pitch = findViewById(R.id.tv_pitch);
 
         tv_rate.setText("45");
         tv_pitch.setText("45");
 
-        speechRate = findViewById(R.id.sb_rate);
+
         speechRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
@@ -80,7 +99,7 @@ public class TextToSpeechEngine extends AppCompatActivity {
             }
         });
 
-        speechPitch = findViewById(R.id.sb_pitch);
+
         speechPitch.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
@@ -102,6 +121,7 @@ public class TextToSpeechEngine extends AppCompatActivity {
         });
 
 
+
         tts =new TextToSpeech(TextToSpeechEngine.this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
@@ -110,6 +130,20 @@ public class TextToSpeechEngine extends AppCompatActivity {
                     result = tts.setLanguage(Locale.UK);
                     tts.setSpeechRate(rate);
                     tts.setPitch(pitch);
+
+                    for (Locale locale : locales) {
+                        int res = tts.isLanguageAvailable(locale);
+                        if (res == TextToSpeech.LANG_COUNTRY_AVAILABLE) {
+                            localeList.add(locale);
+                            country.add(locale.getDisplayName());
+                        }
+                    }
+                    dataAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_item, country);
+                    dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    language.setAdapter(dataAdapter);
+                    int location2id = dataAdapter.getPosition(Locale.UK.getDisplayName());
+                    language.setSelection(location2id);
+
                 }
                 else{
                     Toast.makeText(getApplicationContext(), "Feature not supported on your device", Toast.LENGTH_SHORT).show();
@@ -118,7 +152,19 @@ public class TextToSpeechEngine extends AppCompatActivity {
             }
         });
 
+        language.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                tts.setLanguage(localeList.get(position));
+                currentSelection = localeList.get(position);
 
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
 
         speak.setOnClickListener(new View.OnClickListener() {
@@ -132,7 +178,22 @@ public class TextToSpeechEngine extends AppCompatActivity {
                 else
                 {
                     text = input.getText().toString();
-                    tts.speak(text, TextToSpeech.QUEUE_FLUSH,null);
+
+                    TranslateAPI translateAPI = new TranslateAPI(Language.AUTO_DETECT,currentSelection.toString(),text);
+                    translateAPI.setTranslateListener(new TranslateAPI.TranslateListener() {
+                        @Override
+                        public void onSuccess(String translatedText) {
+                            text = translatedText;
+                            tts.speak(translatedText, TextToSpeech.QUEUE_FLUSH,null);
+
+                        }
+
+                        @Override
+                        public void onFailure(String ErrorText) {
+                            Toast.makeText(getApplicationContext(),"Error fetching converted data", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
 
                 }
 
@@ -153,6 +214,7 @@ public class TextToSpeechEngine extends AppCompatActivity {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.DONUT)
     @Override
     protected void onDestroy(){
         super.onDestroy();
